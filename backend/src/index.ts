@@ -1,5 +1,6 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,22 +9,29 @@ const prisma = new PrismaClient();
 
 app.use(express.json());
 app.post("/api/register", async (req, res) => {
+  const { username, password } = req.body;
   try {
-    const { username, password } = req.body;
+    //hashed password
+    const hashedPassword = bcrypt.hashSync(password, 10);
     if (!username || !password) {
-      return res
-        .status(400)
-        .json({ error: "Username and password are required" });
+      res.status(400).json({ error: "Username and password are required" });
     }
 
+    //create user
     const user = await prisma.user.create({
-      data: { username: username, password: password, role: "ADMIN" },
+      data: { username: username, password: hashedPassword, role: "ADMIN" },
     });
     res.status(201).json(user);
     console.log(`User created: ${user.username} (${user.role})`);
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({ error: "Registration failed" });
+
+    //handle duplicate username error
+    //@ts-ignore
+    if (error.code === "P2002") {
+      res.status(409).json({ error: "Username already exists" });
+    }
+    res.status(500).json({ error: "User creation failed" });
   }
 });
 
