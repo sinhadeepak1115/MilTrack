@@ -15,7 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserById = exports.getUsers = exports.loginUser = exports.createUser = void 0;
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma = new client_1.PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || "my-secret-key";
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password, role } = req.body;
     if (!username || !password) {
@@ -52,6 +54,8 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         const isValid = yield bcrypt_1.default.compare(password, user.password);
+        // jwt logic
+        const token = jsonwebtoken_1.default.sign({ userId: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: "10m" });
         if (!isValid) {
             res.status(401).json({ error: "Invalid credentials" });
             return;
@@ -59,6 +63,7 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(200).json({
             message: "Login successful",
             user: { id: user.id, username: user.username, role: user.role },
+            token,
         });
     }
     catch (_a) {

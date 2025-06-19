@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/controllers/usercontroller.ts","./src/routes/userroute.ts"],"version":"5.8.3"}
+{"root":["./src/index.ts","./src/controllers/usercontroller.ts","./src/middleware/validatetokenhandler.ts","./src/routes/userroute.ts"],"version":"5.8.3"}
