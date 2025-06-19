@@ -70,6 +70,13 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getUsers = async (req: Request, res: Response): Promise<void> => {
+  const user = (req as any).user;
+
+  if (!user || user.role !== "ADMIN") {
+    res.status(403).json({ error: "Access denied: Admins only" });
+    return;
+  }
+
   try {
     const users = await prisma.user.findMany({
       select: { id: true, username: true, role: true },
@@ -80,23 +87,31 @@ const getUsers = async (req: Request, res: Response): Promise<void> => {
   }
 };
 const getUserById = async (req: Request, res: Response): Promise<void> => {
+  const user = (req as any).user;
+
+  if (!user || user.role !== "ADMIN") {
+    res.status(403).json({ error: "Access denied: Admins only" });
+    return;
+  }
+
   const { id } = req.params;
   if (!id) {
     res.status(400).json({ error: "User ID is required" });
     return;
   }
+
   try {
-    const user = await prisma.user.findUnique({
+    const foundUser = await prisma.user.findUnique({
       where: { id: parseInt(id) },
-      select: { id: true, username: true, role: true }, // Exclude password
+      select: { id: true, username: true, role: true },
     });
 
-    if (!user) {
+    if (!foundUser) {
       res.status(404).json({ error: "User not found" });
       return;
     }
 
-    res.status(200).json({ user });
+    res.status(200).json({ user: foundUser });
   } catch {
     res.status(500).json({ error: "Failed to retrieve user" });
   }
