@@ -4,33 +4,93 @@ import { Request, Response } from "express";
 
 const prisma = new PrismaClient();
 
-const postUser = async (req: Request, res: Response) => {
+const createUser = async (req: Request, res: Response): Promise<void> => {
   const { username, password, role } = req.body;
+
+  if (!username || !password) {
+    res.status(400).json({ error: "Username and password are required" });
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   try {
-    if (!username || !password) {
-      res.status(400).json({ error: "Username and password are required" });
-    }
-
-    //hashed password
-    const hashedPassword = bcrypt.hashSync(password, 10);
-
-    //create user
     const user = await prisma.user.create({
-      data: { username: username, password: hashedPassword, role: role },
+      data: { username, password: hashedPassword, role },
     });
-
-    console.log(`User created: ${user.id} ${user.username} ${user.role}`);
     res.status(201).json(user);
-  } catch (error) {
-    console.error("Error creating user:", error);
-
-    //handle duplicate username error
-    //@ts-ignore
+  } catch (error: any) {
     if (error.code === "P2002") {
-      res.status(409).json({ error: "Username already exists" });
+      res.status(409).json({ error: "User already exists" });
+    } else {
+      res.status(500).json({ error: "User creation failed" });
     }
-    res.status(500).json({ error: "User creation failed" });
   }
 };
 
-export { postUser };
+const loginUser = async (req: Request, res: Response): Promise<void> => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    res.status(400).json({ error: "Username and password are required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { username } });
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+
+    if (!isValid) {
+      res.status(401).json({ error: "Invalid credentials" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Login successful",
+      user: { id: user.id, username: user.username, role: user.role },
+    });
+  } catch {
+    res.status(500).json({ error: "User login failed" });
+  }
+};
+
+const getUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, username: true, role: true },
+    });
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to retrieve users" });
+  }
+};
+const getUserById = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  if (!id) {
+    res.status(400).json({ error: "User ID is required" });
+    return;
+  }
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+      select: { id: true, username: true, role: true }, // Exclude password
+    });
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.status(200).json({ user });
+  } catch {
+    res.status(500).json({ error: "Failed to retrieve user" });
+  }
+};
+
+export { createUser, loginUser, getUsers, getUserById };
