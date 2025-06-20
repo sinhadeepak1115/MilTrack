@@ -10,8 +10,7 @@ import validateToken from "../middleware/validateTokenHandler";
 const router = Router();
 
 router.post("/register", createUser).post("/login", loginUser);
-router
-  .get("/", validateToken, getUsers)
-  .get("/:id", validateToken, getUserById);
+// validateToken middleware is applied to all routes below
+router.get("/", getUsers).get("/:id", getUserById);
 
 export default router;

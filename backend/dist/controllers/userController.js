@@ -72,11 +72,12 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.loginUser = loginUser;
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.user;
-    if (!user || user.role !== "ADMIN") {
-        res.status(403).json({ error: "Access denied: Admins only" });
-        return;
-    }
+    // const user = (req as any).user;
+    //
+    // if (!user || user.role !== "ADMIN") {
+    //   res.status(403).json({ error: "Access denied: Admins only" });
+    //   return;
+    // }
     try {
         const users = yield prisma.user.findMany({
             select: { id: true, username: true, role: true },
@@ -89,11 +90,12 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getUsers = getUsers;
 const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.user;
-    if (!user || user.role !== "ADMIN") {
-        res.status(403).json({ error: "Access denied: Admins only" });
-        return;
-    }
+    // const user = (req as any).user;
+    //
+    // if (!user || user.role !== "ADMIN") {
+    //   res.status(403).json({ error: "Access denied: Admins only" });
+    //   return;
+    // }
     const { id } = req.params;
     if (!id) {
         res.status(400).json({ error: "User ID is required" });

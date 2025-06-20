@@ -30,7 +30,7 @@ const createBase = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const base = yield prisma.base.create({
             data: { name: name, location: location },
         });
-        res.status(201).json(base);
+        res.status(201).json({ message: "Base created successfully", base });
     }
     catch (error) {
         if (error.code === "P2002") {
@@ -55,7 +55,9 @@ const updateBase = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             data: { name: name, location: location },
         });
         console.log("Updated Base:", updatedBase);
-        res.status(200).json(updatedBase);
+        res
+            .status(200)
+            .json({ message: "Base updated successfully", base: updatedBase });
     }
     catch (error) {
         if (error.code === "P2002") {

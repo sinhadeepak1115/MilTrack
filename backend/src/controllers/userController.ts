@@ -70,12 +70,12 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getUsers = async (req: Request, res: Response): Promise<void> => {
-  const user = (req as any).user;
-
-  if (!user || user.role !== "ADMIN") {
-    res.status(403).json({ error: "Access denied: Admins only" });
-    return;
-  }
+  // const user = (req as any).user;
+  //
+  // if (!user || user.role !== "ADMIN") {
+  //   res.status(403).json({ error: "Access denied: Admins only" });
+  //   return;
+  // }
 
   try {
     const users = await prisma.user.findMany({
@@ -88,12 +88,12 @@ const getUsers = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getUserById = async (req: Request, res: Response): Promise<void> => {
-  const user = (req as any).user;
-
-  if (!user || user.role !== "ADMIN") {
-    res.status(403).json({ error: "Access denied: Admins only" });
-    return;
-  }
+  // const user = (req as any).user;
+  //
+  // if (!user || user.role !== "ADMIN") {
+  //   res.status(403).json({ error: "Access denied: Admins only" });
+  //   return;
+  // }
 
   const { id } = req.params;
   if (!id) {

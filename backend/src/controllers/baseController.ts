@@ -20,7 +20,7 @@ const createBase = async (req: Request, res: Response): Promise<void> => {
     const base = await prisma.base.create({
       data: { name: name, location: location },
     });
-    res.status(201).json(base);
+    res.status(201).json({ message: "Base created successfully", base });
   } catch (error: any) {
     if (error.code === "P2002") {
       res.status(409).json({ error: "Base already exists" });
@@ -43,7 +43,9 @@ const updateBase = async (req: Request, res: Response): Promise<void> => {
       data: { name: name, location: location },
     });
     console.log("Updated Base:", updatedBase);
-    res.status(200).json(updatedBase);
+    res
+      .status(200)
+      .json({ message: "Base updated successfully", base: updatedBase });
   } catch (error: any) {
     if (error.code === "P2002") {
       res.status(409).json({ error: "Base name must be unique" });

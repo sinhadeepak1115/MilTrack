@@ -7,12 +7,14 @@ const express_1 = __importDefault(require("express"));
 const userRoute_1 = __importDefault(require("./routes/userRoute"));
 const baseRoute_1 = __importDefault(require("./routes/baseRoute"));
 const assetRoute_1 = __importDefault(require("./routes/assetRoute"));
+const logRoutes_1 = __importDefault(require("./routes/logRoutes"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 app.use(express_1.default.json());
 app.use("/api/user", userRoute_1.default);
 app.use("/api/base", baseRoute_1.default);
 app.use("/api/asset", assetRoute_1.default);
+app.use("/api/logs", logRoutes_1.default);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
