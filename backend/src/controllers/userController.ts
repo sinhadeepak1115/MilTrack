@@ -86,6 +86,7 @@ const getUsers = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Failed to retrieve users" });
   }
 };
+
 const getUserById = async (req: Request, res: Response): Promise<void> => {
   const user = (req as any).user;
 

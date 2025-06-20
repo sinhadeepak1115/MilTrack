@@ -9,6 +9,6 @@ const validateTokenHandler_1 = __importDefault(require("../middleware/validateTo
 const router = (0, express_1.Router)();
 router.post("/register", userController_1.createUser).post("/login", userController_1.loginUser);
 router
-    .get("/user", validateTokenHandler_1.default, userController_1.getUsers)
-    .get("/user/:id", validateTokenHandler_1.default, userController_1.getUserById);
+    .get("/", validateTokenHandler_1.default, userController_1.getUsers)
+    .get("/:id", validateTokenHandler_1.default, userController_1.getUserById);
 exports.default = router;

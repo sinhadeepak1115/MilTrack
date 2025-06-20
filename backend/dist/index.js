@@ -5,13 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const userRoute_1 = __importDefault(require("./routes/userRoute"));
+const baseRoute_1 = __importDefault(require("./routes/baseRoute"));
+const assetRoute_1 = __importDefault(require("./routes/assetRoute"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 app.use(express_1.default.json());
-app.use("/api", userRoute_1.default);
-app.get("/", (req, res) => {
-    res.send("Hello, World!");
-});
+app.use("/api/user", userRoute_1.default);
+app.use("/api/base", baseRoute_1.default);
+app.use("/api/asset", assetRoute_1.default);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
