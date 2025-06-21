@@ -12,12 +12,56 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserById = exports.getUsers = exports.loginUser = exports.createUser = void 0;
+exports.deleteUser = exports.getUserById = exports.getUsers = exports.loginUser = exports.createUser = void 0;
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || "my-secret-key";
+const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    if (!user || user.role !== "ADMIN") {
+        res.status(403).json({ error: "Access denied: Admins only" });
+        return;
+    }
+    try {
+        const users = yield prisma.user.findMany({
+            select: { id: true, username: true, role: true },
+        });
+        res.status(200).json({ users });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to retrieve users" });
+    }
+});
+exports.getUsers = getUsers;
+const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    if (!user || user.role !== "ADMIN") {
+        res.status(403).json({ error: "Access denied: Admins only" });
+        return;
+    }
+    const { id } = req.params;
+    if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+    }
+    try {
+        const foundUser = yield prisma.user.findUnique({
+            where: { id: parseInt(id) },
+            select: { id: true, username: true, role: true },
+        });
+        if (!foundUser) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+        res.status(200).json({ user: foundUser });
+    }
+    catch (_a) {
+        res.status(500).json({ error: "Failed to retrieve user" });
+    }
+});
+exports.getUserById = getUserById;
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password, role } = req.body;
     if (!username || !password) {
@@ -29,7 +73,12 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const user = yield prisma.user.create({
             data: { username, password: hashedPassword, role },
         });
-        res.status(201).json(user);
+        const token = jsonwebtoken_1.default.sign({ userId: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: "10m" });
+        res.status(200).json({
+            message: "Register successful",
+            user: { id: user.id, username: user.username, role: user.role },
+            token,
+        });
     }
     catch (error) {
         if (error.code === "P2002") {
@@ -71,49 +120,20 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.loginUser = loginUser;
-const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // const user = (req as any).user;
-    //
-    // if (!user || user.role !== "ADMIN") {
-    //   res.status(403).json({ error: "Access denied: Admins only" });
-    //   return;
-    // }
+const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
     try {
-        const users = yield prisma.user.findMany({
-            select: { id: true, username: true, role: true },
+        const deletedUser = yield prisma.user.delete({
+            where: { id: parseInt(id) },
         });
-        res.status(200).json({ users });
+        res.status(200).json({
+            message: "User deleted successfully",
+            user: deletedUser,
+        });
     }
     catch (error) {
-        res.status(500).json({ error: "Failed to retrieve users" });
+        console.error("Error deleting user:", error);
+        res.status(500).json({ error: "User deletion failed" });
     }
 });
-exports.getUsers = getUsers;
-const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // const user = (req as any).user;
-    //
-    // if (!user || user.role !== "ADMIN") {
-    //   res.status(403).json({ error: "Access denied: Admins only" });
-    //   return;
-    // }
-    const { id } = req.params;
-    if (!id) {
-        res.status(400).json({ error: "User ID is required" });
-        return;
-    }
-    try {
-        const foundUser = yield prisma.user.findUnique({
-            where: { id: parseInt(id) },
-            select: { id: true, username: true, role: true },
-        });
-        if (!foundUser) {
-            res.status(404).json({ error: "User not found" });
-            return;
-        }
-        res.status(200).json({ user: foundUser });
-    }
-    catch (_a) {
-        res.status(500).json({ error: "Failed to retrieve user" });
-    }
-});
-exports.getUserById = getUserById;
+exports.deleteUser = deleteUser;

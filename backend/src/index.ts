@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import userRoutes from "./routes/userRoute";
 import baseRoutes from "./routes/baseRoute";
 import assetRoutes from "./routes/assetRoute";
@@ -6,6 +7,8 @@ import logRoutes from "./routes/logRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors());
 
 app.use(express.json());
 app.use("/api/user", userRoutes);
