@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  COMMANDER
+  LOGISTICS
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  role     Role
+  baseId   Int?
+  base     Base?  @relation(fields: [baseId], references: [id])
+  logs     Log[]
+}
+
+model Base {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique
+  location String?
+  assets   Asset[]
+  users    User[]
+  logs     Log[]
+}
+
+model Asset {
+  id       Int    @id @default(autoincrement())
+  name     String
+  type     String // "vehicle", "weapon", "ammo"
+  quantity Int    @default(0)
+  baseId   Int
+  base     Base   @relation(fields: [baseId], references: [id])
+  logs     Log[]
+}
+
+model Log {
+  id       Int      @id @default(autoincrement())
+  action   String // "purchase", "transfer_in", "transfer_out", "assign", "return", "expend"
+  quantity Int
+  assetId  Int
+  asset    Asset    @relation(fields: [assetId], references: [id])
+  userId   Int
+  user     User     @relation(fields: [userId], references: [id])
+  baseId   Int // current base
+  base     Base     @relation(fields: [baseId], references: [id])
+  targetId Int? // target base for transfers, target user for assignments
+  notes    String?
+  date     DateTime @default(now())
+}
